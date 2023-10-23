@@ -32,7 +32,13 @@ ExternalProject_Add(project_rist
         )
 
 add_library(rist STATIC IMPORTED)
-set_property(TARGET rist PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/librist.a)
+if(UNIX)
+  set_property(TARGET rist PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/librist.a)
+endif()
+if(WIN32)
+  set_property(TARGET rist PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/librist.dll)
+endif()
+
 add_dependencies(rist project_rist)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/rist/include/)

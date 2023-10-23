@@ -405,7 +405,7 @@ public:
    * @param a optional uint16_t value sent to the receiver
    *
    */
-  bool sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID=0);
+  bool sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID=0, uint16_t streamid=NULL, uint64_t ts_ntp=NULL, uint64_t seq=NULL);
 
   /**
   * @brief Send OOB data (Currently not working in librist)

@@ -649,7 +649,7 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
     return true;
 }
 
-bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID) {
+bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID, uint16_t streamid, uint64_t ts_ntp, uint64_t seq) {
     if (!mRistContext) {
         LOGGER(true, LOGG_ERROR, "RISTNetSender not initialised.")
         return false;
@@ -659,6 +659,21 @@ bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConne
     myRISTDataBlock.payload = pData;
     myRISTDataBlock.payload_len = lSize;
     myRISTDataBlock.flow_id = lConnectionID;
+    if (streamid)
+    {
+        myRISTDataBlock.virt_dst_port = streamid;
+    }
+    if (ts_ntp)
+    {
+        myRISTDataBlock.ts_ntp = ts_ntp;
+    }
+    if (seq)
+    {
+        myRISTDataBlock.flags = RIST_DATA_FLAGS_USE_SEQ;
+        myRISTDataBlock.seq = seq;
+    }
+    
+    
 
     int lStatus = rist_sender_data_write(mRistContext, &myRISTDataBlock);
     if (lStatus < 0) {

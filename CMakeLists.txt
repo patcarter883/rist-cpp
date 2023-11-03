@@ -23,7 +23,7 @@ ExternalProject_Add(project_rist
         GIT_TAG master
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
-        BUILD_COMMAND meson setup build --backend vs -Dbuiltin_cjson=true --default-library=static && meson compile -C build
+        BUILD_COMMAND meson setup build --wipe --backend ninja -Dbuiltin_cjson=true --default-library=static && meson compile -C build
         # BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && meson -Dbuiltin_cjson=true --default-library=static .. && ninja
         GIT_PROGRESS 1
         STEP_TARGETS build

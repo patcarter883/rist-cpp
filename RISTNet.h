@@ -334,12 +334,14 @@ public:
           mPeerConfig.max_retries = RIST_DEFAULT_MAX_RETRIES;
           mPeerConfig.weight = 5;
           mPeerConfig.session_timeout = RIST_DEFAULT_SESSION_TIMEOUT;
+          mLogSetting = std::unique_ptr<rist_logging_settings>(new rist_logging_settings);
       };
     rist_profile mProfile = RIST_PROFILE_MAIN;
     rist_peer_config mPeerConfig;
 
     rist_log_level mLogLevel = RIST_LOG_ERROR;
-    std::unique_ptr<rist_logging_settings> mLogSetting;
+    std::unique_ptr<rist_logging_settings> mLogSetting; 
+    int (*log_cb)(void* arg, enum rist_log_level, const char* msg);
     std::string mPSK;
     std::string mCNAME;
     uint32_t mSessionTimeout = 5000;

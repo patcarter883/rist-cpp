@@ -619,12 +619,15 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
         }
     }
 
-    lStatus = rist_oob_callback_set(mRistContext, receiveOOBData, this);
-    if (lStatus) {
-        LOGGER(true, LOGG_ERROR, "rist_sender_oob_set fail.")
-        destroySender();
-        return false;
+    if (rSettings.mProfile != RIST_PROFILE_SIMPLE) {
+       lStatus = rist_oob_callback_set(mRistContext, receiveOOBData, this);
+        if (lStatus) {
+            LOGGER(true, LOGG_ERROR, "rist_sender_oob_set fail.")
+            destroySender();
+            return false;
+        }
     }
+    
 
     lStatus = rist_auth_handler_set(mRistContext, clientConnect, clientDisconnect, this);
     if (lStatus) {

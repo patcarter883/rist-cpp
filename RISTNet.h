@@ -433,7 +433,7 @@ public:
    * @param a optional uint16_t value sent to the receiver
    *
    */
-  bool sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID=0);
+  bool sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID=0, uint16_t virt_dst_port=0);
 
   /**
    * @brief Send pkt

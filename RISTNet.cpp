@@ -595,7 +595,7 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
     int lStatus;
     // Default log settings
     rist_logging_settings* lSettingsPtr = mRistSenderSettings.mLogSetting.get();
-    lStatus = rist_logging_set(&lSettingsPtr, mRistSenderSettings.mLogLevel, mRistSenderSettings.mLogSetting.get()->log_cb, nullptr, nullptr, stderr);
+    lStatus = rist_logging_set(&lSettingsPtr, mRistSenderSettings.mLogLevel, rSettings.mLogSetting.get()->log_cb, nullptr, nullptr, stderr);
     if (lStatus) {
         LOGGER(true, LOGG_ERROR, "rist_logging_set failed.")
         return false;
@@ -697,7 +697,7 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
     return true;
 }
 
-bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID) {
+bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID, uint16_t virt_dst_port) {
     if (!mRistContext) {
         LOGGER(true, LOGG_ERROR, "RISTNetSender not initialised.")
         return false;
@@ -707,6 +707,7 @@ bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConne
     myRISTDataBlock.payload = pData;
     myRISTDataBlock.payload_len = lSize;
     myRISTDataBlock.flow_id = lConnectionID;
+    myRISTDataBlock.virt_dst_port = virt_dst_port;
 
     int lStatus = rist_sender_data_write(mRistContext, &myRISTDataBlock);
     if (lStatus < 0) {

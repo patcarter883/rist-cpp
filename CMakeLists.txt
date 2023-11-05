@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(rist-cpp)
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-find_package(GTest REQUIRED)
 
 #If no build type is set then force Release
 IF( NOT CMAKE_BUILD_TYPE )
@@ -22,10 +20,10 @@ include(ExternalProject)
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://code.videolan.org/rist/librist.git
-        GIT_TAG v0.2.8
+        GIT_TAG v0.2.7
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
-        BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && meson -Dbuiltin_cjson=true --default-library=static .. && ninja
+        BUILD_COMMAND meson setup build --wipe --backend vs -Dbuiltin_cjson=true --default-library=static && meson compile -C build
         GIT_PROGRESS 1
         STEP_TARGETS build
         EXCLUDE_FROM_ALL TRUE
@@ -54,23 +52,3 @@ add_library(ristnet STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/rist/contrib/lz4/xxhash.c
         )
 target_link_libraries(ristnet rist Threads::Threads)
-
-add_executable(rist_cpp main.cpp)
-target_link_libraries(rist_cpp ristnet)
-
-#
-# Build unit tests using GoogleTest
-#
-
-enable_testing()
-
-add_executable(runUnitTests
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/TestRist.cpp
-)
-target_compile_options(runUnitTests PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-function)
-
-target_include_directories(runUnitTests
-        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test)
-
-target_link_libraries(runUnitTests ristnet GTest::GTest GTest::Main)

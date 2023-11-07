@@ -18,7 +18,6 @@ find_package (Threads REQUIRED)
 include(ExternalProject)
 
 ExternalProject_Add(project_rist
-        CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://code.videolan.org/rist/librist.git
         GIT_TAG v0.2.7
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist

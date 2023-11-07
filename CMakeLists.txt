@@ -18,12 +18,12 @@ find_package (Threads REQUIRED)
 include(ExternalProject)
 
 ExternalProject_Add(project_rist
+        CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://code.videolan.org/rist/librist.git
         GIT_TAG v0.2.7
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
-        CONFIGURE_COMMAND meson setup build --wipe --backend $<IF:$<BOOL:${WIN32}>,vs,ninja> -Dbuiltin_cjson=true --default-library=static
-        BUILD_COMMAND meson compile -C build
+        BUILD_COMMAND meson setup build --wipe --backend $<IF:$<BOOL:${WIN32}>,vs,ninja> -Dbuiltin_cjson=true --default-library=static && meson compile -C build
         GIT_PROGRESS 1
         STEP_TARGETS build
         EXCLUDE_FROM_ALL TRUE

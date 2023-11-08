@@ -20,7 +20,7 @@ include(ExternalProject)
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://github.com/patcarter883/librist.git
-        GIT_TAG v0.2.7
+        GIT_TAG master
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BUILD_COMMAND meson setup build --backend $<IF:$<BOOL:${WIN32}>,vs,ninja> -Dbuiltin_cjson=true -Dbuiltin_mbedtls=true --default-library=static && meson compile -C build

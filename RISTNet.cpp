@@ -707,8 +707,11 @@ bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConne
     myRISTDataBlock.payload = pData;
     myRISTDataBlock.payload_len = lSize;
     myRISTDataBlock.flow_id = lConnectionID;
-    myRISTDataBlock.virt_dst_port = virt_dst_port;
-
+    if (virt_dst_port)
+    {
+       myRISTDataBlock.virt_dst_port = virt_dst_port;
+    }
+    
     int lStatus = rist_sender_data_write(mRistContext, &myRISTDataBlock);
     if (lStatus < 0) {
         LOGGER(true, LOGG_ERROR, "rist_client_write failed.")

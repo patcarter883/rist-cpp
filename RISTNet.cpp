@@ -317,11 +317,11 @@ bool RISTNetReceiver::initReceiver(std::vector<std::string> &rURLList,
         mRistPeerConfig.key_size = keysize;
 
         if (keysize) {
-            strncpy((char *) &mRistPeerConfig.secret[0], mRistReceiverSettings.mPSK.c_str(), 128);
+            strncpy_s((char *) &mRistPeerConfig.secret[0], 128, mRistReceiverSettings.mPSK.c_str(), 128);
         }
 
         if (!mRistReceiverSettings.mCNAME.empty()) {
-            strncpy((char *) &mRistPeerConfig.cname[0], mRistReceiverSettings.mCNAME.c_str(), 128);
+            strncpy_s((char *) &mRistPeerConfig.cname[0], 128, mRistReceiverSettings.mCNAME.c_str(), 128);
         }
 
         rist_peer_config* lTmp = &mRistPeerConfig;
@@ -632,11 +632,11 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
         mRistPeerConfig.key_size = keysize;
 
         if (keysize) {
-            strncpy((char *) &mRistPeerConfig.secret[0], mRistSenderSettings.mPSK.c_str(), 128);
+            strncpy_s((char *) &mRistPeerConfig.secret[0], 128, mRistSenderSettings.mPSK.c_str(), 128);
         }
 
         if (!mRistSenderSettings.mCNAME.empty()) {
-            strncpy((char *) &mRistPeerConfig.cname[0], mRistSenderSettings.mCNAME.c_str(), 128);
+            strncpy_s((char *) &mRistPeerConfig.cname[0], 128, mRistSenderSettings.mCNAME.c_str(), 128);
         }
 
         rist_peer_config* lTmp = &mRistPeerConfig;

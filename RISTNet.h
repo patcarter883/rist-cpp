@@ -26,7 +26,7 @@
 #include <functional>
 #include <mutex>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <Winsock2.h>
 #define _WINSOCKAPI_
 #include <ws2tcpip.h>

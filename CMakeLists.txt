@@ -35,10 +35,6 @@ add_library(rist STATIC IMPORTED)
 set_property(TARGET rist PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/librist.a)
 add_dependencies(rist project_rist)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/rist/include/)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/rist/include/librist)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/rist/build/include/librist)
-
 set_source_files_properties( ${CMAKE_CURRENT_SOURCE_DIR}/rist/contrib/lz4/lz4.c PROPERTIES GENERATED TRUE)
 set_source_files_properties( ${CMAKE_CURRENT_SOURCE_DIR}/rist/contrib/lz4/lz4frame.c PROPERTIES GENERATED TRUE)
 set_source_files_properties( ${CMAKE_CURRENT_SOURCE_DIR}/rist/contrib/lz4/lz4hc.c PROPERTIES GENERATED TRUE)
@@ -52,3 +48,9 @@ add_library(ristnet STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/rist/contrib/lz4/xxhash.c
         )
 target_link_libraries(ristnet rist Threads::Threads)
+target_include_directories(ristnet PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/include/)
+target_include_directories(ristnet PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/include/librist)
+target_include_directories(ristnet PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/include/librist)
+
+
+target_include_directories(ristnet PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

@@ -612,6 +612,7 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
     // there can be a segfault if the struct is deallocated before destroying all RIST environment.
     // That can happen if the settings struct used belongs to an upper class or is created as a heap
     // or stack variable.
+    mRistSenderSettings.mLogSetting.get()->log_cb = rSettings.mLogSetting.get()->log_cb;
     mRistSenderSettings.mLogLevel = rSettings.mLogLevel;
     mRistSenderSettings.mPeerConfig = rSettings.mPeerConfig;
     mRistSenderSettings.mProfile = rSettings.mProfile;
@@ -624,7 +625,7 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
     int lStatus;
     // Default log settings
     rist_logging_settings* lSettingsPtr = mRistSenderSettings.mLogSetting.get();
-    lStatus = rist_logging_set(&lSettingsPtr, mRistSenderSettings.mLogLevel, nullptr, nullptr, nullptr, stderr);
+    lStatus = rist_logging_set(&lSettingsPtr, mRistSenderSettings.mLogLevel, mRistSenderSettings.mLogSetting.get()->log_cb, nullptr, nullptr, stderr);
     if (lStatus) {
         LOGGER(true, LOGG_ERROR, "rist_logging_set failed.")
         return false;

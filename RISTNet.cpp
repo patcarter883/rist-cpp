@@ -205,6 +205,15 @@ int RISTNetReceiver::gotStatistics(void *pArg, const rist_stats *stats) {
 void RISTNetReceiver::connectionStatus(void *arg, struct rist_peer *peer, enum rist_connection_status peer_connection_status) {
     RISTNetReceiver *lWeakSelf = static_cast<RISTNetReceiver*>(arg);
     lWeakSelf->mConnectionStatus = peer_connection_status;
+    int sock, sockExtra;
+    if(rist_peer_get_socket(peer, &sock, &sockExtra) == 0) {
+        struct sockaddr_in sockAddr{};
+        socklen_t sockAddrLen = sizeof(sockAddr);
+        if(getsockname(sock, (struct sockaddr *)&sockAddr, &sockAddrLen) == 0) {
+            lWeakSelf->mSocketPort_be = sockAddr.sin_port;
+            lWeakSelf->mSocketIp_be = sockAddr.sin_addr.s_addr;
+        }
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -213,6 +222,14 @@ void RISTNetReceiver::connectionStatus(void *arg, struct rist_peer *peer, enum r
 
 rist_connection_status RISTNetReceiver::getConnectionStatus() {
     return mConnectionStatus;
+}
+
+uint16_t RISTNetReceiver::getSockPort_be() {
+    return mSocketPort_be;
+}
+
+uint32_t RISTNetReceiver::getSockIp_be() {
+    return mSocketIp_be;
 }
 
 void RISTNetReceiver::getActiveClients(
@@ -537,6 +554,15 @@ int RISTNetSender::gotStatistics(void *pArg, const rist_stats *stats) {
 void RISTNetSender::connectionStatus(void *arg, struct rist_peer *peer, enum rist_connection_status peer_connection_status) {
     RISTNetSender *lWeakSelf = static_cast<RISTNetSender*>(arg);
     lWeakSelf->mConnectionStatus = peer_connection_status;
+    int sock, sockExtra;
+    if(rist_peer_get_socket(peer, &sock, &sockExtra) == 0) {
+        struct sockaddr_in sockAddr{};
+        socklen_t sockAddrLen = sizeof(sockAddr);
+        if(getsockname(sock, (struct sockaddr *)&sockAddr, &sockAddrLen) == 0) {
+            lWeakSelf->mSocketPort_be = sockAddr.sin_port;
+            lWeakSelf->mSocketIp_be = sockAddr.sin_addr.s_addr;
+        }
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -545,6 +571,14 @@ void RISTNetSender::connectionStatus(void *arg, struct rist_peer *peer, enum ris
 
 rist_connection_status RISTNetSender::getConnectionStatus() {
     return mConnectionStatus;
+}
+
+uint16_t RISTNetSender::getSockPort_be() {
+    return mSocketPort_be;
+}
+
+uint32_t RISTNetSender::getSockIp_be() {
+    return mSocketIp_be;
 }
 
 void RISTNetSender::getActiveClients(

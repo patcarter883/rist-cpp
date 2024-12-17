@@ -10,6 +10,30 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
+if(UNIX)
+find_package(GTest REQUIRED)
+endif()
+
+if(WIN32)
+# Set compiler options.
+set(variables
+	CMAKE_C_FLAGS_DEBUG
+	CMAKE_C_FLAGS_MINSIZEREL
+	CMAKE_C_FLAGS_RELEASE
+	CMAKE_C_FLAGS_RELWITHDEBINFO
+	CMAKE_CXX_FLAGS_DEBUG
+	CMAKE_CXX_FLAGS_MINSIZEREL
+	CMAKE_CXX_FLAGS_RELEASE
+	CMAKE_CXX_FLAGS_RELWITHDEBINFO
+)
+
+foreach(variable ${variables})
+	if(${variable} MATCHES "/MD")
+		string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
+	endif()
+endforeach()
+endif()
+
 #If no build type is set then force Release
 IF( NOT CMAKE_BUILD_TYPE )
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING
@@ -23,9 +47,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 find_package (Threads REQUIRED)
 include(ExternalProject)
 
-        if(WIN32)
+if(WIN32)
 set(BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/rist/build")
-set(BUILD_CMD cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && meson -Dbuiltin_cjson=true --default-library=static .. && ninja)
+set(BUILD_CMD cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && meson -Dbuiltin_cjson=true --default-library=static -Db_vscrt=mt .. && ninja)
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://github.com/patcarter883/librist.git
@@ -42,8 +66,8 @@ ExternalProject_Add(project_rist
 else()
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
-        GIT_REPOSITORY https://github.com/patcarter883/librist.git
-        GIT_TAG master
+        GIT_REPOSITORY https://code.videolan.org/rist/librist.git
+        GIT_TAG v0.2.10
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND meson -Dbuiltin_cjson=true --default-library=static .. COMMAND ninja
@@ -85,3 +109,20 @@ IF (WIN32)
         target_link_libraries(ristnet PRIVATE iphlpapi wsock32 ws2_32)
 ENDIF()
 
+#
+# Build unit tests using GoogleTest
+#
+if(UNIX)
+	enable_testing()
+
+	add_executable(runUnitTests
+			${CMAKE_CURRENT_SOURCE_DIR}/test/TestRist.cpp
+	)
+	target_compile_options(runUnitTests PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-function)
+
+	target_include_directories(runUnitTests
+			PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+			PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test)
+
+	target_link_libraries(runUnitTests ristnet GTest::GTest GTest::Main)
+endif()

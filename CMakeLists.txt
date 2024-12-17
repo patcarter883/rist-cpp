@@ -52,8 +52,8 @@ set(BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/rist/build")
 set(BUILD_CMD cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && meson -Dbuiltin_cjson=true --default-library=static -Db_vscrt=mt .. && ninja)
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
-        GIT_REPOSITORY https://github.com/patcarter883/librist.git
-        GIT_TAG master
+        GIT_REPOSITORY https://code.videolan.org/rist/librist.git
+        GIT_TAG v0.2.11
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BUILD_COMMAND ${BUILD_CMD}

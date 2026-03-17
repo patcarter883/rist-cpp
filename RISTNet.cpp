@@ -466,7 +466,7 @@ rist_peer_config* RISTNetReceiver::getPeerConfig() {
 RISTNetSender::RISTNetSender() {
     validateConnectionCallback = std::bind(&RISTNetSender::validateConnectionStub, this, std::placeholders::_1,
                                            std::placeholders::_2);
-    LOGGER(false, LOGG_NOTIFY, "RISTNetSender constructed")
+    // LOGGER(false, LOGG_NOTIFY, "RISTNetSender constructed")
 }
 
 RISTNetSender::~RISTNetSender() {
@@ -768,7 +768,7 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
     return true;
 }
 
-bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID) {
+bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID, uint16_t virt_dst_port, uint64_t seq, uint64_t ts_ntp) {
     if (!mRistContext) {
         LOGGER(true, LOGG_ERROR, "RISTNetSender not initialised.")
         return false;
@@ -778,7 +778,16 @@ bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConne
     myRISTDataBlock.payload = pData;
     myRISTDataBlock.payload_len = lSize;
     myRISTDataBlock.flow_id = lConnectionID;
-
+    if (virt_dst_port != 0U)
+    {
+       myRISTDataBlock.virt_dst_port = virt_dst_port;
+    }
+    if (seq != 0U) {
+        myRISTDataBlock.seq = seq;
+    }
+    if (ts_ntp != 0U) {
+        myRISTDataBlock.ts_ntp = ts_ntp;
+    }
     int lStatus = rist_sender_data_write(mRistContext, &myRISTDataBlock);
     if (lStatus < 0) {
         LOGGER(true, LOGG_ERROR, "rist_client_write failed.")

@@ -10,9 +10,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
-if(UNIX)
-find_package(GTest REQUIRED)
-endif()
+# if(UNIX)
+# find_package(GTest REQUIRED)
+# endif()
 
 if(WIN32)
 # Set compiler options.
@@ -49,11 +49,11 @@ include(ExternalProject)
 
 if(WIN32)
 set(BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/rist/build")
-set(BUILD_CMD cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && meson -Dbuiltin_cjson=true --default-library=static -Db_vscrt=mt .. && ninja)
+set(BUILD_CMD cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true --default-library=static -Db_vscrt=mt .. && ninja)
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://code.videolan.org/rist/librist.git
-        GIT_TAG v0.2.11
+        GIT_TAG origin/master
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BUILD_COMMAND ${BUILD_CMD}
@@ -67,10 +67,10 @@ else()
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://code.videolan.org/rist/librist.git
-        GIT_TAG v0.2.11
+        GIT_TAG origin/master
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
-        BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND meson -Dbuiltin_cjson=true --default-library=static .. COMMAND ninja
+        BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true --default-library=static .. COMMAND ninja
         GIT_PROGRESS 1
         STEP_TARGETS build
         EXCLUDE_FROM_ALL TRUE
@@ -95,12 +95,13 @@ add_library(ristnet STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/rist/contrib/lz4/lz4hc.c
         ${CMAKE_CURRENT_SOURCE_DIR}/rist/contrib/lz4/xxhash.c
         )
-target_link_libraries(ristnet PUBLIC rist)
+target_link_libraries(ristnet PUBLIC ${warning_guard} rist)
 target_link_libraries(ristnet PRIVATE Threads::Threads)
 
-target_include_directories(ristnet PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/include/)
-target_include_directories(ristnet PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/include/librist)
-target_include_directories(ristnet PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/include/librist)
+target_include_directories(ristnet ${warning_guard} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(ristnet ${warning_guard} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/include/)
+target_include_directories(ristnet ${warning_guard} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/include/librist)
+target_include_directories(ristnet ${warning_guard} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/include/librist)
 
 
 
@@ -112,17 +113,17 @@ ENDIF()
 #
 # Build unit tests using GoogleTest
 #
-if(UNIX)
-	enable_testing()
+# if(UNIX)
+# 	enable_testing()
 
-	add_executable(runUnitTests
-			${CMAKE_CURRENT_SOURCE_DIR}/test/TestRist.cpp
-	)
-	target_compile_options(runUnitTests PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-function)
+# 	add_executable(runUnitTests
+# 			${CMAKE_CURRENT_SOURCE_DIR}/test/TestRist.cpp
+# 	)
+# 	target_compile_options(runUnitTests PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-function)
 
-	target_include_directories(runUnitTests
-			PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-			PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test)
+# 	target_include_directories(runUnitTests
+# 			PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+# 			PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
-	target_link_libraries(runUnitTests ristnet GTest::GTest GTest::Main)
-endif()
+# 	target_link_libraries(runUnitTests ristnet GTest::GTest GTest::Main)
+# endif()

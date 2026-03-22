@@ -65,12 +65,12 @@ ExternalProject_Add(project_rist
         )
 else()
 ExternalProject_Add(project_rist
-        CONFIGURE_COMMAND ""
+        CONFIGURE_COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true --default-library=static ..
         GIT_REPOSITORY https://code.videolan.org/rist/librist.git
         GIT_TAG origin/master
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
-        BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true --default-library=static .. COMMAND ninja
+        BUILD_COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND ninja
         GIT_PROGRESS 1
         STEP_TARGETS build
         EXCLUDE_FROM_ALL TRUE

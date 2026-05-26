@@ -257,20 +257,21 @@ bool RISTNetReceiver::closeClientConnection(rist_peer *lPeer) {
 }
 
 void RISTNetReceiver::closeAllClientConnections() {
-    std::lock_guard<std::recursive_mutex> lLock(mClientListMtx);
-    for (auto it = mClientListReceiver.cbegin(); it != mClientListReceiver.cend(); ) {
-        rist_peer *lPeer = it->first;
-        // BUG -> if I erase the peer here, the corresponding disconnectCB won't be called
-        // but if I erase the peer in clientDisconnect, it will corrupt this iteration
-        // TODO: possible solution, get static list of peers and call destroy on each one?
-        // without iterating a map that is being modified at the same time
-        it = mClientListReceiver.erase(it);
-        int lStatus = rist_peer_destroy(mRistContext, lPeer);
-        if (lStatus) {
-            LOGGER(true, LOGG_ERROR, "rist_receiver_peer_destroy failed: ")
-        }
-    }
-}
+     std::lock_guard<std::recursive_mutex> lLock(mClientListMtx);
+     // Collect peers to a vector first to avoid iterator invalidation
+     // when rist_peer_destroy triggers clientDisconnect callback
+     std::vector<rist_peer*> peersToDestroy;
+     for (const auto& pair : mClientListReceiver) {
+         peersToDestroy.push_back(pair.first);
+     }
+     // Now destroy each peer (safe from callback interference)
+     for (rist_peer* lPeer : peersToDestroy) {
+         int lStatus = rist_peer_destroy(mRistContext, lPeer);
+         if (lStatus) {
+             LOGGER(true, LOGG_ERROR, "rist_receiver_peer_destroy failed: ")
+         }
+     }
+ }
 
 bool RISTNetReceiver::destroyReceiver() {
     if (mRistContext) {
@@ -605,19 +606,22 @@ bool RISTNetSender::closeClientConnection(rist_peer *lPeer) {
 }
 
 void RISTNetSender::closeAllClientConnections() {
-    std::lock_guard<std::recursive_mutex> lLock(mClientListMtx);
-    for (auto &rPeer: mClientListSender) {
-        // BUG -> this iteration will get corrupted with the erasing of the peer in clientDisconnect
-        // TODO: possible solution, get static list of peers and call destroy on each one?
-        // without iterating a map that is being modified at the same time
-        rist_peer *pPeer = rPeer.first;
-        int status = rist_peer_destroy(mRistContext, pPeer);
-        if (status) {
-            LOGGER(true, LOGG_ERROR, "rist_sender_peer_destroy failed: ")
-        }
-    }
-    mClientListSender.clear();
-}
+     std::lock_guard<std::recursive_mutex> lLock(mClientListMtx);
+     // Collect peers to a vector first to avoid iterator invalidation
+     // when rist_peer_destroy triggers clientDisconnect callback
+     std::vector<rist_peer*> peersToDestroy;
+     for (const auto& pair : mClientListSender) {
+         peersToDestroy.push_back(pair.first);
+     }
+     // Now destroy each peer (safe from callback interference)
+     for (rist_peer* pPeer : peersToDestroy) {
+         int status = rist_peer_destroy(mRistContext, pPeer);
+         if (status) {
+             LOGGER(true, LOGG_ERROR, "rist_sender_peer_destroy failed: ")
+         }
+     }
+     mClientListSender.clear();
+ }
 
 bool RISTNetSender::destroySender() {
     if (mRistContext) {

@@ -48,20 +48,20 @@ find_package (Threads REQUIRED)
 include(ExternalProject)
 
 if(WIN32)
-set(BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/rist/build")
-set(BUILD_CMD cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build && meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true --default-library=static -Db_vscrt=mt .. && ninja)
+set(BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/rist-build")
+set(BUILD_CMD cd ${BUILD_DIR} && meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true --default-library=static -Db_vscrt=mt ${CMAKE_CURRENT_SOURCE_DIR}/rist && ninja)
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://code.videolan.org/rist/librist.git
         GIT_TAG origin/master
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
-        BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
+        BINARY_DIR ${BUILD_DIR}
         BUILD_COMMAND ${BUILD_CMD}
         GIT_PROGRESS 1
         STEP_TARGETS build
         EXCLUDE_FROM_ALL TRUE
         INSTALL_COMMAND ""
-        BUILD_BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/librist.a
+        BUILD_BYPRODUCTS ${BUILD_DIR}/librist.a
         )
 else()
 ExternalProject_Add(project_rist
@@ -69,18 +69,18 @@ ExternalProject_Add(project_rist
         GIT_REPOSITORY https://code.videolan.org/rist/librist.git
         GIT_TAG origin/master
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
-        BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
-        BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rist/build COMMAND meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true --default-library=static .. COMMAND ninja
+        BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/rist-build
+        BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/rist-build COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/rist-build COMMAND meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true --default-library=static ${CMAKE_CURRENT_SOURCE_DIR}/rist COMMAND ninja
         GIT_PROGRESS 1
         STEP_TARGETS build
         EXCLUDE_FROM_ALL TRUE
         INSTALL_COMMAND ""
-        BUILD_BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/librist.a
+        BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/rist-build/librist.a
         )
 endif()
 
 add_library(rist STATIC IMPORTED)
-set_property(TARGET rist PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/librist.a)
+set_property(TARGET rist PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/rist-build/librist.a)
 add_dependencies(rist project_rist)
 
 set_source_files_properties( ${CMAKE_CURRENT_SOURCE_DIR}/rist/contrib/lz4/lz4.c PROPERTIES GENERATED TRUE)
@@ -101,7 +101,7 @@ target_link_libraries(ristnet PRIVATE Threads::Threads)
 target_include_directories(ristnet ${warning_guard} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(ristnet ${warning_guard} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/include/)
 target_include_directories(ristnet ${warning_guard} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/include/librist)
-target_include_directories(ristnet ${warning_guard} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/rist/build/include/librist)
+target_include_directories(ristnet ${warning_guard} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/rist-build/include/librist)
 
 
 
@@ -110,20 +110,32 @@ IF (WIN32)
         target_link_libraries(ristnet PRIVATE iphlpapi wsock32 ws2_32)
 ENDIF()
 
-#
-# Build unit tests using GoogleTest
-#
-# if(UNIX)
-# 	enable_testing()
+# ---- Install rules ----
 
-# 	add_executable(runUnitTests
-# 			${CMAKE_CURRENT_SOURCE_DIR}/test/TestRist.cpp
-# 	)
-# 	target_compile_options(runUnitTests PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-function)
+include(GNUInstallDirs)
 
-# 	target_include_directories(runUnitTests
-# 			PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-# 			PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test)
+install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/rist-build/librist.a
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
 
-# 	target_link_libraries(runUnitTests ristnet GTest::GTest GTest::Main)
-# endif()
+install(DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/rist/include/librist
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}/rist-build/include/librist
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.h"
+)
+
+install(TARGETS ristnet
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/RISTNet.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/RISTNetInternal.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rist-cpp
+)

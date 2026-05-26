@@ -91,27 +91,32 @@ public:
     };
 
 
-    struct RISTNetReceiverSettings {
-      RISTNetReceiverSettings() {
-          mPeerConfig.version = RIST_PEER_CONFIG_VERSION;
-          mPeerConfig.virt_dst_port = RIST_DEFAULT_VIRT_DST_PORT;
-          mPeerConfig.recovery_mode = RIST_DEFAULT_RECOVERY_MODE;
-          mPeerConfig.recovery_maxbitrate = RIST_DEFAULT_RECOVERY_MAXBITRATE;
-          mPeerConfig.recovery_maxbitrate_return = RIST_DEFAULT_RECOVERY_MAXBITRATE_RETURN;
-          mPeerConfig.recovery_length_min = RIST_DEFAULT_RECOVERY_LENGTH_MIN;
-          mPeerConfig.recovery_length_max = RIST_DEFAULT_RECOVERY_LENGTH_MAX;
-          mPeerConfig.recovery_reorder_buffer = RIST_DEFAULT_RECOVERY_REORDER_BUFFER;
-          mPeerConfig.recovery_rtt_min = RIST_DEFAULT_RECOVERY_RTT_MIN;
-          mPeerConfig.recovery_rtt_max = RIST_DEFAULT_RECOVERY_RTT_MAX;
-          mPeerConfig.congestion_control_mode = RIST_DEFAULT_CONGESTION_CONTROL_MODE;
-          mPeerConfig.min_retries = RIST_DEFAULT_MIN_RETRIES;
-          mPeerConfig.max_retries = RIST_DEFAULT_MAX_RETRIES;
-          mPeerConfig.weight = 5;
-          mPeerConfig.session_timeout = RIST_DEFAULT_SESSION_TIMEOUT;
-          mLogSetting = std::make_unique<rist_logging_settings>(rist_logging_settings LOGGING_SETTINGS_INITIALIZER);
-      }
-    rist_profile mProfile = RIST_PROFILE_MAIN;
-    rist_peer_config mPeerConfig;
+struct RISTNetReceiverSettings {
+       RISTNetReceiverSettings() {
+           mPeerConfig.version = RIST_PEER_CONFIG_VERSION;
+           mPeerConfig.virt_dst_port = RIST_DEFAULT_VIRT_DST_PORT;
+           mPeerConfig.recovery_mode = RIST_DEFAULT_RECOVERY_MODE;
+           mPeerConfig.recovery_maxbitrate = RIST_DEFAULT_RECOVERY_MAXBITRATE;
+           mPeerConfig.recovery_maxbitrate_return = RIST_DEFAULT_RECOVERY_MAXBITRATE_RETURN;
+           mPeerConfig.recovery_length_min = RIST_DEFAULT_RECOVERY_LENGTH_MIN;
+           mPeerConfig.recovery_length_max = RIST_DEFAULT_RECOVERY_LENGTH_MAX;
+           mPeerConfig.recovery_reorder_buffer = RIST_DEFAULT_RECOVERY_REORDER_BUFFER;
+           mPeerConfig.recovery_rtt_min = RIST_DEFAULT_RECOVERY_RTT_MIN;
+           mPeerConfig.recovery_rtt_max = RIST_DEFAULT_RECOVERY_RTT_MAX;
+           mPeerConfig.congestion_control_mode = RIST_DEFAULT_CONGESTION_CONTROL_MODE;
+           mPeerConfig.min_retries = RIST_DEFAULT_MIN_RETRIES;
+           mPeerConfig.max_retries = RIST_DEFAULT_MAX_RETRIES;
+           mPeerConfig.weight = 5;
+           mPeerConfig.session_timeout = RIST_DEFAULT_SESSION_TIMEOUT;
+           mLogSetting = std::make_unique<rist_logging_settings>(rist_logging_settings LOGGING_SETTINGS_INITIALIZER);
+       }
+
+       /// RIST profile setting - determines the protocol features enabled
+       /// - RIST_PROFILE_SIMPLE: Basic RIST features (default compatibility mode)
+       /// - RIST_PROFILE_MAIN: Standard RIST profile with full negotiation support
+       /// - RIST_PROFILE_ADVANCED: Extended features for advanced use cases
+       rist_profile mProfile = RIST_PROFILE_MAIN;
+       rist_peer_config mPeerConfig;
 
     rist_log_level mLogLevel = RIST_LOG_ERROR;
     std::unique_ptr<rist_logging_settings> mLogSetting;
@@ -363,27 +368,32 @@ public:
         std::any mObject = nullptr; //Contains your object
     };
 
-  struct RISTNetSenderSettings {
-      RISTNetSenderSettings() {
-          mPeerConfig.version = RIST_PEER_CONFIG_VERSION;
-          mPeerConfig.virt_dst_port = RIST_DEFAULT_VIRT_DST_PORT;
-          mPeerConfig.recovery_mode = RIST_DEFAULT_RECOVERY_MODE;
-          mPeerConfig.recovery_maxbitrate = RIST_DEFAULT_RECOVERY_MAXBITRATE;
-          mPeerConfig.recovery_maxbitrate_return = RIST_DEFAULT_RECOVERY_MAXBITRATE_RETURN;
-          mPeerConfig.recovery_length_min = RIST_DEFAULT_RECOVERY_LENGTH_MIN;
-          mPeerConfig.recovery_length_max = RIST_DEFAULT_RECOVERY_LENGTH_MAX;
-          mPeerConfig.recovery_reorder_buffer = RIST_DEFAULT_RECOVERY_REORDER_BUFFER;
-          mPeerConfig.recovery_rtt_min = RIST_DEFAULT_RECOVERY_RTT_MIN;
-          mPeerConfig.recovery_rtt_max = RIST_DEFAULT_RECOVERY_RTT_MAX;
-          mPeerConfig.congestion_control_mode = RIST_DEFAULT_CONGESTION_CONTROL_MODE;
-          mPeerConfig.min_retries = RIST_DEFAULT_MIN_RETRIES;
-          mPeerConfig.max_retries = RIST_DEFAULT_MAX_RETRIES;
-          mPeerConfig.weight = 5;
-          mPeerConfig.session_timeout = RIST_DEFAULT_SESSION_TIMEOUT;
-          mLogSetting = std::make_unique<rist_logging_settings>(rist_logging_settings LOGGING_SETTINGS_INITIALIZER);
-      };
-    rist_profile mProfile = RIST_PROFILE_MAIN;
-    rist_peer_config mPeerConfig;
+struct RISTNetSenderSettings {
+       RISTNetSenderSettings() {
+           mPeerConfig.version = RIST_PEER_CONFIG_VERSION;
+           mPeerConfig.virt_dst_port = RIST_DEFAULT_VIRT_DST_PORT;
+           mPeerConfig.recovery_mode = RIST_DEFAULT_RECOVERY_MODE;
+           mPeerConfig.recovery_maxbitrate = RIST_DEFAULT_RECOVERY_MAXBITRATE;
+           mPeerConfig.recovery_maxbitrate_return = RIST_DEFAULT_RECOVERY_MAXBITRATE_RETURN;
+           mPeerConfig.recovery_length_min = RIST_DEFAULT_RECOVERY_LENGTH_MIN;
+           mPeerConfig.recovery_length_max = RIST_DEFAULT_RECOVERY_LENGTH_MAX;
+           mPeerConfig.recovery_reorder_buffer = RIST_DEFAULT_RECOVERY_REORDER_BUFFER;
+           mPeerConfig.recovery_rtt_min = RIST_DEFAULT_RECOVERY_RTT_MIN;
+           mPeerConfig.recovery_rtt_max = RIST_DEFAULT_RECOVERY_RTT_MAX;
+           mPeerConfig.congestion_control_mode = RIST_DEFAULT_CONGESTION_CONTROL_MODE;
+           mPeerConfig.min_retries = RIST_DEFAULT_MIN_RETRIES;
+           mPeerConfig.max_retries = RIST_DEFAULT_MAX_RETRIES;
+           mPeerConfig.weight = 5;
+           mPeerConfig.session_timeout = RIST_DEFAULT_SESSION_TIMEOUT;
+           mLogSetting = std::make_unique<rist_logging_settings>(rist_logging_settings LOGGING_SETTINGS_INITIALIZER);
+       };
+
+       /// RIST profile setting - determines the protocol features enabled
+       /// - RIST_PROFILE_SIMPLE: Basic RIST features (default compatibility mode)
+       /// - RIST_PROFILE_MAIN: Standard RIST profile with full negotiation support
+       /// - RIST_PROFILE_ADVANCED: Extended features for advanced use cases
+       rist_profile mProfile = RIST_PROFILE_MAIN;
+       rist_peer_config mPeerConfig;
 
     rist_log_level mLogLevel = RIST_LOG_ERROR;
     std::unique_ptr<rist_logging_settings> mLogSetting;

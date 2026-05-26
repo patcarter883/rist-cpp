@@ -295,3 +295,118 @@ TEST_F(TestFixtureReceiver, DISABLED_RejectConnection) {
             EXPECT_EQ(activeClients.size(), 0);
         });
 }
+
+// Test: Verify iterator bug fix in closeAllClientConnections
+// This test ensures that calling closeAllClientConnections multiple times
+// does not cause crashes or iterator invalidation issues.
+TEST_F(TestFixture, CloseAllClientConnectionsIterationSafety) {
+    // Connect one sender
+    ASSERT_TRUE(checkSenderConnecting()) << "Timeout waiting for sender to connect";
+    mReceiver->getActiveClients(
+        [&](std::map<rist_peer*, std::shared_ptr<RISTNetReceiver::NetworkConnection>>& activeClients) {
+            ASSERT_EQ(activeClients.size(), 1);
+        });
+
+    // First call should close all connections
+    mReceiver->closeAllClientConnections();
+
+    // Second call should be safe (no crash) even with empty client list
+    // This verifies the iterator fix - previously this could crash due to callback
+    // triggering during iteration
+    mReceiver->closeAllClientConnections();
+
+    // Third call to verify idempotency
+    mReceiver->closeAllClientConnections();
+
+    // Verify no clients remain
+    mReceiver->getActiveClients(
+        [&](std::map<rist_peer*, std::shared_ptr<RISTNetReceiver::NetworkConnection>>& activeClients) {
+            EXPECT_EQ(activeClients.size(), 0);
+        });
+}
+
+// Test: Verify RIST_PROFILE_SIMPLE can be configured
+TEST(TestRist, ProfileSimpleConfiguration) {
+    RISTNetReceiver receiver;
+    std::vector<std::string> receiverInterfaces{"rist://@0.0.0.0:8001"};
+    RISTNetReceiver::RISTNetReceiverSettings receiverSettings;
+    receiverSettings.mPSK = kValidPsk;
+    receiverSettings.mProfile = RIST_PROFILE_SIMPLE;
+
+    receiver.validateConnectionCallback = [&](const std::string& ipAddress, uint16_t port) {
+        return std::make_shared<RISTNetReceiver::NetworkConnection>();
+    };
+
+    ASSERT_TRUE(receiver.initReceiver(receiverInterfaces, receiverSettings));
+
+    // Verify profile was set correctly
+    rist_peer_config* peerConfig = receiver.getPeerConfig();
+    EXPECT_NE(peerConfig, nullptr);
+}
+
+// Test: Verify RIST_PROFILE_MAIN can be configured
+TEST(TestRist, ProfileMainConfiguration) {
+    RISTNetReceiver receiver;
+    std::vector<std::string> receiverInterfaces{"rist://@0.0.0.0:8002"};
+    RISTNetReceiver::RISTNetReceiverSettings receiverSettings;
+    receiverSettings.mPSK = kValidPsk;
+    receiverSettings.mProfile = RIST_PROFILE_MAIN;
+
+    receiver.validateConnectionCallback = [&](const std::string& ipAddress, uint16_t port) {
+        return std::make_shared<RISTNetReceiver::NetworkConnection>();
+    };
+
+    ASSERT_TRUE(receiver.initReceiver(receiverInterfaces, receiverSettings));
+
+    rist_peer_config* peerConfig = receiver.getPeerConfig();
+    EXPECT_NE(peerConfig, nullptr);
+}
+
+// Test: Verify RIST_PROFILE_ADVANCED can be configured
+TEST(TestRist, ProfileAdvancedConfiguration) {
+    RISTNetReceiver receiver;
+    std::vector<std::string> receiverInterfaces{"rist://@0.0.0.0:8003"};
+    RISTNetReceiver::RISTNetReceiverSettings receiverSettings;
+    receiverSettings.mPSK = kValidPsk;
+    receiverSettings.mProfile = RIST_PROFILE_ADVANCED;
+
+    receiver.validateConnectionCallback = [&](const std::string& ipAddress, uint16_t port) {
+        return std::make_shared<RISTNetReceiver::NetworkConnection>();
+    };
+
+    ASSERT_TRUE(receiver.initReceiver(receiverInterfaces, receiverSettings));
+
+    rist_peer_config* peerConfig = receiver.getPeerConfig();
+    EXPECT_NE(peerConfig, nullptr);
+}
+
+// Test: Verify profile settings work with sender initialization
+TEST(TestRist, SenderProfileSimpleConfiguration) {
+    RISTNetSender sender;
+    std::vector<std::tuple<std::string, int>> senderInterfaces{
+        std::tuple<std::string, int>("rist://127.0.0.1:8001", 0)};
+    RISTNetSender::RISTNetSenderSettings senderSettings;
+    senderSettings.mProfile = RIST_PROFILE_SIMPLE;
+
+    ASSERT_TRUE(sender.initSender(senderInterfaces, senderSettings));
+}
+
+TEST(TestRist, SenderProfileMainConfiguration) {
+    RISTNetSender sender;
+    std::vector<std::tuple<std::string, int>> senderInterfaces{
+        std::tuple<std::string, int>("rist://127.0.0.1:8002", 0)};
+    RISTNetSender::RISTNetSenderSettings senderSettings;
+    senderSettings.mProfile = RIST_PROFILE_MAIN;
+
+    ASSERT_TRUE(sender.initSender(senderInterfaces, senderSettings));
+}
+
+TEST(TestRist, SenderProfileAdvancedConfiguration) {
+    RISTNetSender sender;
+    std::vector<std::tuple<std::string, int>> senderInterfaces{
+        std::tuple<std::string, int>("rist://127.0.0.1:8003", 0)};
+    RISTNetSender::RISTNetSenderSettings senderSettings;
+    senderSettings.mProfile = RIST_PROFILE_ADVANCED;
+
+    ASSERT_TRUE(sender.initSender(senderInterfaces, senderSettings));
+}

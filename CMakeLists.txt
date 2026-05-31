@@ -52,8 +52,8 @@ set(BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/rist-build")
 set(BUILD_CMD cd ${BUILD_DIR} && meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true -Dbuiltin_lz4=true --default-library=static -Db_vscrt=mt ${CMAKE_CURRENT_SOURCE_DIR}/rist && ninja)
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
-        GIT_REPOSITORY https://code.videolan.org/rist/librist.git
-        GIT_TAG origin/master
+        GIT_REPOSITORY https://github.com/patcarter883/librist.git
+        GIT_TAG 20ec09a10a14f323dc729817d36321bad5bf9296
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${BUILD_DIR}
         BUILD_COMMAND ${BUILD_CMD}
@@ -66,8 +66,8 @@ ExternalProject_Add(project_rist
 else()
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
-        GIT_REPOSITORY https://code.videolan.org/rist/librist.git
-        GIT_TAG origin/master
+        GIT_REPOSITORY https://github.com/patcarter883/librist.git
+        GIT_TAG 20ec09a10a14f323dc729817d36321bad5bf9296
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/rist-build
         BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/rist-build COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/rist-build COMMAND meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true -Dbuiltin_lz4=true --default-library=static ${CMAKE_CURRENT_SOURCE_DIR}/rist COMMAND ninja

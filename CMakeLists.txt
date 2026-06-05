@@ -49,11 +49,49 @@ include(ExternalProject)
 
 if(WIN32)
 set(BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/rist-build")
-set(BUILD_CMD cd ${BUILD_DIR} && meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true -Dbuiltin_lz4=true --default-library=static -Db_vscrt=mt ${CMAKE_CURRENT_SOURCE_DIR}/rist && ninja)
+
+if(CMAKE_CROSSCOMPILING)
+  # Cross-compiling (e.g. Linux → Windows via MinGW-w64): generate a meson
+  # cross-file so librist is built with the target compilers, not the host.
+  set(_meson_cross_file "${CMAKE_CURRENT_BINARY_DIR}/meson-cross-mingw.ini")
+  file(WRITE "${_meson_cross_file}"
+    "[binaries]\n"
+    "c = '${CMAKE_C_COMPILER}'\n"
+    "cpp = '${CMAKE_CXX_COMPILER}'\n"
+    "ar = '${CMAKE_AR}'\n"
+    "strip = '${CMAKE_STRIP}'\n"
+    "\n"
+    "[host_machine]\n"
+    "system = 'windows'\n"
+    "cpu_family = 'x86_64'\n"
+    "cpu = 'x86_64'\n"
+    "endian = 'little'\n"
+    "\n"
+    "[properties]\n"
+    "needs_exe_wrapper = true\n"
+  )
+  set(BUILD_CMD
+    cd ${BUILD_DIR} &&
+    meson --cross-file ${_meson_cross_file}
+      -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true -Dbuiltin_lz4=true -Dbuilt_tools=false -Dtest=false
+      --default-library=static
+      ${CMAKE_CURRENT_SOURCE_DIR}/rist &&
+    ninja
+  )
+else()
+  set(BUILD_CMD
+    cd ${BUILD_DIR} &&
+    meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true -Dbuiltin_lz4=true -Dbuilt_tools=false -Dtest=false
+      --default-library=static -Db_vscrt=mt
+      ${CMAKE_CURRENT_SOURCE_DIR}/rist &&
+    ninja
+  )
+endif()
+
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://github.com/patcarter883/librist.git
-        GIT_TAG 20ec09a10a14f323dc729817d36321bad5bf9296
+        GIT_TAG v0.2.18-rc1-13+obr1
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${BUILD_DIR}
         BUILD_COMMAND ${BUILD_CMD}
@@ -67,10 +105,10 @@ else()
 ExternalProject_Add(project_rist
         CONFIGURE_COMMAND ""
         GIT_REPOSITORY https://github.com/patcarter883/librist.git
-        GIT_TAG 20ec09a10a14f323dc729817d36321bad5bf9296
+        GIT_TAG v0.2.18-rc1-13+obr1
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rist
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/rist-build
-        BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/rist-build COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/rist-build COMMAND meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true -Dbuiltin_lz4=true --default-library=static ${CMAKE_CURRENT_SOURCE_DIR}/rist COMMAND ninja
+        BUILD_COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/rist-build COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/rist-build COMMAND meson -Dbuiltin_mbedtls=true -Dbuiltin_cjson=true -Dbuiltin_lz4=true -Dbuilt_tools=false -Dtest=false --default-library=static ${CMAKE_CURRENT_SOURCE_DIR}/rist COMMAND ninja
         GIT_PROGRESS 1
         STEP_TARGETS build
         EXCLUDE_FROM_ALL TRUE

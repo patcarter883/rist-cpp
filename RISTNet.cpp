@@ -331,6 +331,8 @@ bool RISTNetReceiver::initReceiver(std::vector<std::string> &rURLList,
             keysize = 128;
         }
         mRistPeerConfig.version = RIST_PEER_CONFIG_VERSION;
+        mRistPeerConfig.profile = mRistReceiverSettings.mProfile;
+        mRistPeerConfig.profile_set = 1;
         mRistPeerConfig.virt_dst_port = RIST_DEFAULT_VIRT_DST_PORT;
         mRistPeerConfig.recovery_mode = mRistReceiverSettings.mPeerConfig.recovery_mode;
         mRistPeerConfig.recovery_maxbitrate = mRistReceiverSettings.mPeerConfig.recovery_maxbitrate;
@@ -683,6 +685,12 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
             keysize = 128;
         }
         mRistPeerConfig.version = RIST_PEER_CONFIG_VERSION;
+        // Without this the peer's wire profile is SIMPLE: a zero-initialised
+        // rist_peer_config cannot distinguish "simple" from "unset", so the
+        // context-level profile alone never reaches the wire. An advanced or
+        // main listener then sees simple framing and drops the flow.
+        mRistPeerConfig.profile = mRistSenderSettings.mProfile;
+        mRistPeerConfig.profile_set = 1;
         mRistPeerConfig.virt_dst_port = RIST_DEFAULT_VIRT_DST_PORT;
         mRistPeerConfig.recovery_mode = mRistSenderSettings.mPeerConfig.recovery_mode;
         mRistPeerConfig.recovery_maxbitrate = mRistSenderSettings.mPeerConfig.recovery_maxbitrate;

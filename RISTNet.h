@@ -121,6 +121,7 @@ struct RISTNetReceiverSettings {
     rist_log_level mLogLevel = RIST_LOG_ERROR;
     std::unique_ptr<rist_logging_settings> mLogSetting;
     std::string mPSK;
+    int mPSKKeySize = 128;
     std::string mCNAME;
     int mSessionTimeout = 5000;
     int mKeepAliveInterval = 10000;
@@ -398,6 +399,7 @@ struct RISTNetSenderSettings {
     rist_log_level mLogLevel = RIST_LOG_ERROR;
     std::unique_ptr<rist_logging_settings> mLogSetting;
     std::string mPSK;
+    int mPSKKeySize = 128;
     std::string mCNAME;
     uint32_t mSessionTimeout = 5000;
     uint32_t mKeepAliveInterval = 10000;

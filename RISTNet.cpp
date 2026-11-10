@@ -328,7 +328,7 @@ bool RISTNetReceiver::initReceiver(std::vector<std::string> &rURLList,
     for (auto &rURL: rURLList) {
         int keysize = 0;
         if (!mRistReceiverSettings.mPSK.empty()) {
-            keysize = 128;
+            keysize = (mRistReceiverSettings.mPSKKeySize == 256) ? 256 : 128;
         }
         mRistPeerConfig.version = RIST_PEER_CONFIG_VERSION;
         mRistPeerConfig.profile = mRistReceiverSettings.mProfile;
@@ -373,6 +373,26 @@ bool RISTNetReceiver::initReceiver(std::vector<std::string> &rURLList,
             destroyReceiver();
             return false;
         }
+
+#if HAVE_SRP_SUPPORT
+        /* The URL's username/password reach the peer config via rist_parse_address2();
+         * the peer config alone does not enable SRP, so hand them over explicitly. */
+        if (strlen(mRistPeerConfig.srp_username) > 0
+            && strlen(mRistPeerConfig.srp_password) > 0) {
+            if (rist_enable_eap_srp_2(peer, mRistPeerConfig.srp_username,
+                                      mRistPeerConfig.srp_password, NULL, NULL)) {
+                LOGGER(true, LOGG_ERROR, "rist_receiver_enable_eap_srp fail: " << rURL)
+                destroyReceiver();
+                return false;
+            }
+        } else if ((strlen(mRistPeerConfig.srp_username) > 0)
+                   != (strlen(mRistPeerConfig.srp_password) > 0)) {
+            /* Half a credential pair would silently skip SRP and leave a dead leg. */
+            LOGGER(true, LOGG_ERROR, "SRP needs both username and password: " << rURL)
+            destroyReceiver();
+            return false;
+        }
+#endif
     }
 
     if (mRistReceiverSettings.mMaxJitter) {
@@ -441,8 +461,8 @@ bool RISTNetReceiver::sendOOBData(rist_peer *pPeer, const uint8_t *pData, size_t
 
     int lStatus = rist_oob_write(mRistContext, &myOOBBlock);
     if (lStatus) {
-        LOGGER(true, LOGG_ERROR, "rist_receiver_oob_write failed.")
-        destroyReceiver();
+        /* A dropped telemetry tick is not a reason to end a live session. */
+        LOGGER(true, LOGG_ERROR, "rist_receiver_oob_write failed (telemetry tick dropped).")
         return false;
     }
     return true;
@@ -682,7 +702,7 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
 
         int keysize = 0;
         if (!mRistSenderSettings.mPSK.empty()) {
-            keysize = 128;
+            keysize = (mRistSenderSettings.mPSKKeySize == 256) ? 256 : 128;
         }
         mRistPeerConfig.version = RIST_PEER_CONFIG_VERSION;
         // Without this the peer's wire profile is SIMPLE: a zero-initialised
@@ -731,6 +751,18 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
             destroySender();
             return false;
         }
+
+#if HAVE_SRP_SUPPORT
+        if (strlen(mRistPeerConfig.srp_username) > 0
+            && strlen(mRistPeerConfig.srp_password) > 0) {
+            if (rist_enable_eap_srp_2(peer, mRistPeerConfig.srp_username,
+                                      mRistPeerConfig.srp_password, NULL, NULL)) {
+                LOGGER(true, LOGG_ERROR, "rist_sender_enable_eap_srp fail: " << peerURL)
+                destroySender();
+                return false;
+            }
+        }
+#endif
     }
 
     if (mRistSenderSettings.mMaxJitter) {

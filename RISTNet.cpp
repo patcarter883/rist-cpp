@@ -651,6 +651,7 @@ bool RISTNetSender::destroySender() {
         mRistContext = nullptr;
         std::lock_guard<std::recursive_mutex> lLock(mClientListMtx);
         mClientListSender.clear();
+        mSenderPeers.clear();
         if (lStatus) {
             LOGGER(true, LOGG_ERROR, "rist_sender_destroy fail.")
             return false;
@@ -695,6 +696,11 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
     if (lStatus) {
         LOGGER(true, LOGG_ERROR, "rist_sender_create fail.")
         return false;
+    }
+    {
+        std::lock_guard<std::recursive_mutex> lLock(mClientListMtx);
+        mSenderPeers.clear();
+        mSenderPeers.reserve(rPeerList.size());
     }
     for (auto &rPeerInfo: rPeerList) {
 
@@ -750,6 +756,10 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
             LOGGER(true, LOGG_ERROR, "rist_sender_peer_create fail: " << peerURL)
             destroySender();
             return false;
+        }
+        {
+            std::lock_guard<std::recursive_mutex> lLock(mClientListMtx);
+            mSenderPeers.push_back(peer);
         }
 
 #if HAVE_SRP_SUPPORT
@@ -810,6 +820,34 @@ bool RISTNetSender::initSender(std::vector<std::tuple<std::string,int>> &rPeerLi
     }
 
     return true;
+}
+
+uint32_t RISTNetSender::getPeerId(size_t index) {
+    std::lock_guard<std::recursive_mutex> lLock(mClientListMtx);
+    if (index >= mSenderPeers.size() || mSenderPeers[index] == nullptr) {
+        return 0;
+    }
+    return rist_peer_get_id(mSenderPeers[index]);
+}
+
+bool RISTNetSender::setPeerWeight(uint32_t peerId, uint32_t weight) {
+    std::lock_guard<std::recursive_mutex> lLock(mClientListMtx);
+    if (!mRistContext) {
+        LOGGER(true, LOGG_ERROR, "RISTNetSender not initialised.")
+        return false;
+    }
+    for (rist_peer *peer : mSenderPeers) {
+        if (peer == nullptr || rist_peer_get_id(peer) != peerId) {
+            continue;
+        }
+        if (rist_peer_weight_set(mRistContext, peer, weight)) {
+            LOGGER(true, LOGG_ERROR, "rist_peer_weight_set failed for peer " << peerId)
+            return false;
+        }
+        return true;
+    }
+    LOGGER(true, LOGG_ERROR, "No sender peer with id " << peerId)
+    return false;
 }
 
 bool RISTNetSender::sendData(const uint8_t *pData, size_t lSize, uint16_t lConnectionID, uint16_t virt_dst_port, uint64_t seq, uint64_t ts_ntp) {

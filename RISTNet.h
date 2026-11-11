@@ -430,6 +430,27 @@ struct RISTNetSenderSettings {
                   RISTNetSenderSettings &rSettings);
 
   /**
+   * @brief Get a sender peer's librist id
+   *
+   * @param index position in the URL list initSender was given
+   * @return the id librist reports for that peer in the sender stats, or 0 when
+   *         the sender holds no peer at that position
+   */
+  uint32_t getPeerId(size_t index);
+
+  /**
+   * @brief Set a live sender peer's load-balancing weight
+   *
+   * Applies to a peer initSender already created, so a bonded sender follows
+   * measured capacity instead of a weight fixed at init.
+   *
+   * @param peerId the id getPeerId returned, or the one in the sender stats
+   * @param weight the new weight (0 duplicates every packet on every peer)
+   * @return true when the peer exists and librist accepted the weight
+   */
+  bool setPeerWeight(uint32_t peerId, uint32_t weight);
+
+  /**
    * @brief Get peer config
    *
    * Get config set to the last connected peer.
@@ -599,6 +620,11 @@ private:
 
   // The list of connected clients
   std::map<rist_peer *, std::shared_ptr<NetworkConnection>> mClientListSender;
+
+  // Peers initSender created, in the order of the URL list it was given, so a
+  // peer's weight can be changed while the sender runs. Guarded by
+  // mClientListMtx.
+  std::vector<rist_peer *> mSenderPeers;
 };
 
 #endif //CPPRISTWRAPPER__RISTNET_H
